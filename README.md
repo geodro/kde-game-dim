@@ -25,7 +25,8 @@ Play a borderless or windowed game that doesn't cover the whole screen and the w
 - ⚡ **Instant both ways.** Dimming is applied on activation and undone the moment you leave. Every window's original opacity is remembered individually and restored exactly — nothing is assumed to have been at 100 %.
 - 🪟 **New windows join in.** A notification window or a launcher popping up mid‑game is dimmed as it appears, without re‑walking the window list.
 - ⚙️ **Settings, not source edits.** Opacity, the two detection rules, the class list and the panel behaviour live in a proper config page in System Settings, applied live.
-- ⌨️ **The switcher and the popups stay lit.** Alt+Tab's switcher is a KWin window like any other and would otherwise be dimmed into unreadability — it, KWin's other internal windows, and every menu, task‑manager preview and OSD are left alone. Taking the focus doesn't count as leaving the game either.
+- ⌨️ **The switcher and the popups stay lit.** Alt+Tab's switcher is a KWin window like any other and would otherwise be dimmed into unreadability — it and KWin's other internal windows are left alone, and taking the focus doesn't count as leaving the game.
+- 🖱️ **Hovering the task manager lifts the dimming.** A task‑manager preview is a live thumbnail of the window it mirrors, so it inherits that window's opacity — excluding the tooltip itself isn't enough. Open a preview or a panel menu and the dimming steps aside until you close it. Notifications, which open themselves, deliberately don't.
 - 🔍 **Overview gets out of the way.** Open Overview, Present Windows or the Desktop Grid mid‑game and the dimming lifts for as long as they're on screen — a grid of black thumbnails is useless. It comes back when you drop into the game again.
 - 🪶 **Signal‑driven.** The script sleeps until KWin says something happened; the only thing it has to watch rather than await is the effect above, and that watch only ticks while a game is running.
 
@@ -112,6 +113,8 @@ From then on it's four signals and nothing else. `windowActivated` re‑evaluate
 
 One thing has to survive outside that map: KWin has no unload event, so reloading the script (or a KWin crash) while a game is running would strand windows at 10 % with nothing left to restore them — and, worse, the next load would record 10 % as their *normal* opacity, quietly turning undimming into a no‑op. So on startup anything still sitting at the dim level is recognised as our own leftover and put back to full, and a dim never saves a value already at or below the dim level.
 
+Popups get the same treatment through ordinary signals: `windowAdded` counts anything that is a tooltip or a popup and isn't a notification, `windowRemoved` uncounts it, and while that count is above zero the dimming is suspended exactly as it is for Overview. Notifications are excluded on purpose — they open themselves, and one arriving mid‑match would throw the whole desktop back to full brightness.
+
 One thing genuinely cannot be awaited. Overview, Present Windows and the Desktop Grid put every window on screen at once, and dimming through them shows a grid of black rectangles — but KWin publishes no signal for an effect starting, only the `workspace.isEffectActive()` query. Hanging that question on cursor movement almost works and then strands you: a game that locks the pointer emits nothing once Overview closes, so the dimming never returns. So a `QTimer` polls those three effects — started when a game becomes active, stopped the moment it isn't.
 
 It polls every 20 ms, and that number is not paranoia. Overview composes its backdrop and its thumbnails from the frames it draws as it opens; catch it 250 ms late and you get a black hole with the dimming baked into the picture, even though every window's opacity was restored a fraction of a second later. Restoring before the first frames land is the whole job. Three string lookups per frame is nothing beside the game running next to it.
@@ -128,7 +131,7 @@ The global state is `gameKey`, the `suspended` flag for that suspension, and the
 - **My game isn't detected.** It's probably a windowed game with a titlebar — add its class (see above). Check what KWin thinks it is with `queryWindowInfo`.
 - **Fullscreen video dims my other monitor.** That's the *fullscreen windows* rule doing its job. Turn it off and rely on borderless + the class list.
 - **10 % doesn't look like 10 %.** It is — screenshots are in gamma‑encoded sRGB, where 10 % of light reads as roughly 35 % of the pixel value. Set the opacity to `0 %` if you want it gone entirely.
-- **Task‑manager previews are dark.** They are live thumbnails of the windows themselves, and a thumbnail inherits the opacity of what it mirrors. The tooltip frame around it is left alone, but its content is the dimmed window — there is nothing to exclude.
+- **The desktop lights up when I open a menu.** By design: a task‑manager preview is a live thumbnail and inherits the opacity of the window it mirrors, so the only way to show it properly is to stop dimming while any popup or tooltip is open. It goes back the moment the popup closes.
 - **A window stayed dimmed.** Disabling the script while a game is active leaves it that way: the KWin scripting API has no unload event to clean up in. Re‑enable it — it recognises its own leftovers on startup and restores them — or log out and back in.
 
 ---

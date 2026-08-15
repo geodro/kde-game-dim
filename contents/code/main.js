@@ -77,9 +77,14 @@ const SUSPENDING_EFFECTS = ["overview", "windowview", "desktopgrid"];
 
 // Key of the current game, or null.
 let gameKey = null;
-// True while one of the effects above is on screen: the game is still the game,
-// we are just not dimming for it right now.
+// True while something is on screen that the dimming has to get out of the way of:
+// the game is still the game, we are just not dimming for it right now.
 let suspended = false;
+// Popups and tooltips currently open, by internalId. A task-manager preview is a
+// live thumbnail of the window it mirrors, so it inherits its opacity — the only
+// way to show it bright is to stop dimming while it is up.
+const suspenders = {};
+let suspenderCount = 0;
 // internalId -> opacity before dimming. We never stash properties on the window
 // object: the JS wrapper is not guaranteed to be the same across calls.
 const saved = {};
@@ -93,13 +98,7 @@ const saved = {};
 // only ticks while a game is active.
 const effectWatch = new QTimer();
 effectWatch.interval = 20;
-effectWatch.timeout.connect(function () {
-    const active = suspendingEffectActive();
-    if (active !== suspended) {
-        suspended = active;
-        refreshDim();
-    }
-});
+effectWatch.timeout.connect(updateSuspension);
 
 function dim(w) {
     const k = key(w);
@@ -148,6 +147,39 @@ function suspendingEffectActive() {
     return false;
 }
 
+// A popup you opened is worth un-dimming for; a notification that opened itself is
+// not — it would blow the whole desktop back to full brightness mid-game.
+function suspendsDimming(w) {
+    if (w.notification === true || w.criticalNotification === true || w.onScreenDisplay === true) {
+        return false;
+    }
+    return w.tooltip === true || w.popupWindow === true;
+}
+
+function addSuspender(w) {
+    const k = key(w);
+    if (suspenders[k] === undefined) {
+        suspenders[k] = true;
+        suspenderCount++;
+    }
+}
+
+function removeSuspender(w) {
+    const k = key(w);
+    if (suspenders[k] !== undefined) {
+        delete suspenders[k];
+        suspenderCount--;
+    }
+}
+
+function updateSuspension() {
+    const active = suspenderCount > 0 || suspendingEffectActive();
+    if (active !== suspended) {
+        suspended = active;
+        refreshDim();
+    }
+}
+
 function refreshDim() {
     if (gameKey !== null && !suspended) {
         applyDim();
@@ -158,7 +190,7 @@ function refreshDim() {
 
 function enterGame(game) {
     gameKey = key(game);
-    suspended = suspendingEffectActive();
+    suspended = suspenderCount > 0 || suspendingEffectActive();
     refreshDim();
     effectWatch.start();
 }
@@ -207,6 +239,11 @@ function onAdded(w) {
     w.fullScreenChanged.connect(function () { onWindowChanged(w); });
     w.minimizedChanged.connect(function () { onWindowChanged(w); });
 
+    if (suspendsDimming(w)) {
+        addSuspender(w);
+        updateSuspension();
+        return;
+    }
     // A window born mid-game is dimmed on the spot — no rescan.
     if (gameKey !== null && !suspended && key(w) !== gameKey) {
         dim(w);
@@ -216,6 +253,8 @@ function onAdded(w) {
 function onRemoved(w) {
     const k = key(w);
     delete saved[k];
+    removeSuspender(w);
+    updateSuspension();
     if (gameKey === k) {
         leaveGame();
     }
