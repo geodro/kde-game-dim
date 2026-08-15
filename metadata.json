@@ -1,0 +1,26 @@
+{
+    "KPackageStructure": "KWin/Script",
+    "KPlugin": {
+        "Id": "gamedim",
+        "Name": "Game Dim",
+        "Description": "Dims everything but the game while the game is the active window",
+        "Version": "1.0",
+        "License": "MIT",
+        "Category": "Appearance",
+        "Icon": "applications-games",
+        "Authors": [
+            {
+                "Name": "George Dumitrescu"
+            }
+        ],
+        "EnabledByDefault": true,
+        "ServiceTypes": [
+            "KWin/Script"
+        ]
+    },
+    "X-Plasma-API": "javascript",
+    "X-Plasma-MainScript": "code/main.js",
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-KDE-ConfigModule": "kwin/effects/configs/kcm_kwin4_genericscripted",
+    "X-KDE-PluginKeyword": "gamedim"
+}
