@@ -12,6 +12,10 @@ Play a borderless or windowed game that doesn't cover the whole screen and the w
 ![KWin Script](https://img.shields.io/badge/KWin-Script-blueviolet)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow)
 
+[![Get it on the KDE Store](https://img.shields.io/badge/KDE%20Store-Get%20it-1d99f3?logo=kde&logoColor=white)](https://store.kde.org/p/2368747/)
+
+![Game Dim — before and after](docs/gallery-before-after.png)
+
 </div>
 
 ---

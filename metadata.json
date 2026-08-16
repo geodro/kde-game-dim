@@ -6,6 +6,7 @@
         "Description": "Dims everything but the game while the game is the active window",
         "Version": "1.0",
         "License": "MIT",
+        "Website": "https://github.com/geodro/kde-game-dim",
         "Category": "Appearance",
         "Icon": "applications-games",
         "Authors": [
