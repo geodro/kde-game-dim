@@ -56,7 +56,7 @@ What it does:
 
 Tested on Plasma 6 under Wayland, compatible with X11.
 
-Pairs with "Fullscreen to New Desktop" (https://store.kde.org/p/2368744/) — one gives the game its own Space, the other blacks out whatever is left around it.
+Pairs with "Fullscreen to New Desktop" (https://store.kde.org/p/2368744/) — the two split the problem rather than overlap: that one handles the window that does cover the screen, by giving it its own virtual desktop; this one handles the window that doesn't. On a multi-monitor setup they stack: the game gets its own Space and the screen next to it goes black instead of showing an empty, bright desktop.
 
 Install: System Settings → Window Management → KWin Scripts → Get New Scripts, or download the .kwinscript file and use "Install from File".
 

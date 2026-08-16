@@ -34,7 +34,7 @@ Play a borderless or windowed game that doesn't cover the whole screen and the w
 - 🔍 **Overview gets out of the way.** Open Overview, Present Windows or the Desktop Grid mid‑game and the dimming lifts for as long as they're on screen — a grid of black thumbnails is useless. It comes back when you drop into the game again.
 - 🪶 **Signal‑driven.** The script sleeps until KWin says something happened; the only thing it has to watch rather than await is the effect above, and that watch only ticks while a game is running.
 
-> **Works great with:** [Fullscreen to New Desktop](https://github.com/geodro/kde-fullscreen-spaces) — one gives the game its own Space, the other blacks out whatever is left around it.
+> 🖥️ **Companion script:** [**Fullscreen to New Desktop**](https://store.kde.org/p/2368744/) ([source](https://github.com/geodro/kde-fullscreen-spaces)) — the two split the problem rather than overlap: that one handles the window that *does* cover the screen, by giving it its own virtual desktop; this one handles the window that doesn't. On a multi‑monitor setup they stack — the game gets its own Space *and* the screen next to it goes black instead of showing an empty, bright desktop.
 
 ---
 
